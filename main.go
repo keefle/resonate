@@ -14,10 +14,12 @@ import (
 func main() {
 
 	done := make(chan bool)
+
 	var (
 		fDir = flag.String("f1", ".", "specifies the folder1 to sync")
 		sDir = flag.String("f2", ".", "specifies the folder2 to sync")
 	)
+
 	flag.Parse()
 
 	var err error
@@ -29,12 +31,12 @@ func main() {
 		log.Fatal(fmt.Errorf("could not init git cluster: %v", err))
 	}
 
-	go WatchNode(*fDir, cluster)
-	go WatchNode(*sDir, cluster)
+	go watchNode(*fDir, cluster)
+	go watchNode(*sDir, cluster)
 	<-done
 }
 
-func WatchNode(url string, cluster *gitcluster.Cluster) {
+func watchNode(url string, cluster *gitcluster.Cluster) {
 
 	watcher, err := fsnotify.NewWatcher()
 
