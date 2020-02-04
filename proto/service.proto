@@ -1,0 +1,50 @@
+syntax = "proto3";
+package network;
+
+
+service FileManager {
+  // Sends a greeting
+  rpc Create (CreateRequest) returns (Void) {}
+  rpc Write  (WriteRequest)  returns (Void) {}
+  rpc Remove (RemoveRequest) returns (Void) {}
+  rpc Mkdir  (MkdirRequest)  returns (Void) {}
+  rpc Rename (RenameRequest) returns (Void) {}
+}
+// Lock File
+// UnLock File
+// Update File
+
+message Void {}
+
+// Create
+message CreateRequest {
+    string path   = 1;
+    string name   = 2;
+    uint32 mode   = 3;
+}
+// Remove
+message RemoveRequest {
+    string path = 1;
+    string name = 2;
+}
+// Rename
+message RenameRequest {
+    string path       = 1;
+    string oldname    = 2;
+    string newname    = 3;
+    string newdirpath = 4;
+}
+
+// Mkdir
+message MkdirRequest {
+    string path       = 1;
+    string name       = 2;
+    uint32 mode       = 3;
+}
+// Write
+message WriteRequest {
+    string path  = 1;
+    bytes data   = 2;
+    int64 offset = 3;
+}
+

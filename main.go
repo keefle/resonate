@@ -1,75 +1,89 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
-	"os"
-	"path/filepath"
+	"net"
 
-	"git.edraj.io/mo/resonate/gitcluster"
-	"github.com/fsnotify/fsnotify"
+	"git.iyi.cz/mo/resonate/network"
+	rfs "git.iyi.cz/mo/resonatefuse"
+	"google.golang.org/grpc"
+)
+
+var (
+	port = flag.Int("port", 1234, "choose a port number for self")
+	peer = flag.String("peer", "127.0.0.1:4321", "choose peer address")
+	dir  = flag.String("dir", "fake", "choose directory to sync")
 )
 
 func main() {
-
-	done := make(chan bool)
-
-	var (
-		fDir = flag.String("f1", ".", "specifies the folder1 to sync")
-		sDir = flag.String("f2", ".", "specifies the folder2 to sync")
-	)
-
 	flag.Parse()
 
-	var err error
-	*fDir, err = filepath.Abs(*fDir)
-	*sDir, err = filepath.Abs(*sDir)
-
-	cluster, err := gitcluster.NewCluster(*fDir, *sDir)
+	vol := rfs.NewVolume(*dir, createHook, writeHook, removeHook, mkdirHook, renameHook)
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
-		log.Fatal(fmt.Errorf("could not init git cluster: %v", err))
+		log.Fatalf("failed to listen: %v", err)
 	}
+	grpcServer := grpc.NewServer()
+	network.RegisterFileManagerServer(grpcServer, network.NewFileManager(vol.Fuse()))
+	go func() {
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
-	go watchNode(*fDir, cluster)
-	go watchNode(*sDir, cluster)
-	<-done
+	vol.Serve()
 }
 
-func watchNode(url string, cluster *gitcluster.Cluster) {
+func createHook(req *rfs.CreateRequest) {
+	log.Println("hook running")
+	conn, err := grpc.Dial(*peer, grpc.WithInsecure())
+	log.Println(err)
 
-	watcher, err := fsnotify.NewWatcher()
+	client := network.NewFileManagerClient(conn)
 
-	if err != nil {
-		fmt.Println("ERROR", err)
-		return
-	}
+	_, err = client.Create(context.Background(), &network.CreateRequest{Path: req.Path, Name: req.Name, Mode: uint32(req.Mode)})
+	log.Println(err)
+}
 
-	defer watcher.Close()
+func writeHook(req *rfs.WriteRequest) {
+	log.Println("hook running")
+	conn, err := grpc.Dial(*peer, grpc.WithInsecure())
+	log.Println(err)
 
-	if err := watcher.Add(url); err != nil {
-		log.Fatal(fmt.Errorf("could not watch %v: %v", url, err))
-	}
+	client := network.NewFileManagerClient(conn)
+	_, err = client.Write(context.Background(), &network.WriteRequest{Path: req.Path, Data: req.Data, Offset: req.Offset})
+	log.Println(err)
+}
 
-	err = filepath.Walk(url, func(path string, info os.FileInfo, err error) error {
-		fmt.Println(info.Name())
-		if info.IsDir() && info.Name() == ".git" {
-			return filepath.SkipDir
-		}
-		if info.IsDir() {
-			watcher.Add(path)
-		}
+func removeHook(req *rfs.RemoveRequest) {
+	log.Println("hook running")
+	conn, err := grpc.Dial(*peer, grpc.WithInsecure())
+	log.Println(err)
 
-		return nil
-	})
+	client := network.NewFileManagerClient(conn)
+	_, err = client.Remove(context.Background(), &network.RemoveRequest{Path: req.Path, Name: req.Name})
+	log.Println(err)
+}
 
-	for {
-		select {
-		case event := <-watcher.Events:
-			go cluster.PullFrom(url)
-			log.Print(fmt.Sprintf("%v: %v", event.Op, filepath.Base(event.Name)))
-		case <-watcher.Errors:
-			fmt.Println("ERROR", url, err)
-		}
-	}
+func renameHook(req *rfs.RenameRequest) {
+	log.Println("hook running")
+	conn, err := grpc.Dial(*peer, grpc.WithInsecure())
+	log.Println(err)
+
+	client := network.NewFileManagerClient(conn)
+	_, err = client.Rename(context.Background(), &network.RenameRequest{Path: req.Path, Oldname: req.OldName, Newname: req.NewName, Newdirpath: req.NewDir})
+	log.Println(err)
+}
+
+func mkdirHook(req *rfs.MkdirRequest) {
+	log.Println("hook running")
+	conn, err := grpc.Dial(*peer, grpc.WithInsecure())
+	log.Println(err)
+
+	client := network.NewFileManagerClient(conn)
+	_, err = client.Mkdir(context.Background(), &network.MkdirRequest{Path: req.Path, Name: req.Name, Mode: uint32(req.Mode)})
+	log.Println(err)
 }
