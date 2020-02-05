@@ -7,8 +7,8 @@ import (
 	"log"
 	"net"
 
-	"git.iyi.cz/mo/resonate/network"
-	rfs "git.iyi.cz/mo/resonatefuse"
+	"git.nightcrickets.space/keefleoflimon/resonate/network"
+	rfs "git.nightcrickets.space/keefleoflimon/resonatefuse"
 	"google.golang.org/grpc"
 )
 

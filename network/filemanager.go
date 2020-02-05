@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	rfs "git.iyi.cz/mo/resonatefuse"
+	rfs "git.nightcrickets.space/keefleoflimon/resonatefuse"
 )
 
 type FileManager struct {
