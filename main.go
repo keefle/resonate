@@ -21,7 +21,7 @@ var (
 func main() {
 	flag.Parse()
 
-	vol := rfs.NewVolume(*dir, createHook, writeHook, removeHook, mkdirHook, renameHook)
+	vol := rfs.NewVolume(*dir, rfs.CreateOption(createHook), rfs.WriteOption(writeHook), rfs.RemoveOption(removeHook), rfs.MkdirOption(mkdirHook), rfs.RenameOption(renameHook))
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
