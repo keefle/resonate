@@ -5,9 +5,12 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	rfs "git.nightcrickets.space/keefleoflimon/resonatefuse"
 )
+
+var _ FileManagerServer = (*FileManager)(nil)
 
 type FileManager struct {
 	fs *rfs.FS
@@ -73,6 +76,44 @@ func (fm *FileManager) Rename(ctx context.Context, req *RenameRequest) (*Void, e
 	child := node.(*rfs.File).Child(req.GetPath())
 	newDir := node.(*rfs.File).Child(req.GetNewdirpath())
 	err := child.FFNode.Rename(req.GetOldname(), req.GetNewname(), newDir.FFNode)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return &Void{}, nil
+}
+
+func (fm *FileManager) Link(ctx context.Context, req *LinkRequest) (*Void, error) {
+	node, _ := fm.fs.Root()
+	child := node.(*rfs.File).Child(req.GetPath())
+	old := node.(*rfs.File).Child(req.GetOld())
+	_, err := child.FFNode.Link(req.GetNewname(), old.FFNode)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return &Void{}, nil
+}
+
+func (fm *FileManager) Symlink(ctx context.Context, req *SymlinkRequest) (*Void, error) {
+	node, _ := fm.fs.Root()
+	child := node.(*rfs.File).Child(req.GetPath())
+	_, err := child.FFNode.Symlink(req.GetTarget(), req.GetNewname())
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return &Void{}, nil
+}
+
+func (fm *FileManager) Setattr(ctx context.Context, req *SetattrRequest) (*Void, error) {
+	node, _ := fm.fs.Root()
+	child := node.(*rfs.File).Child(req.GetPath())
+
+	err := child.FFNode.Setattr(os.FileMode(req.GetMode()), time.Unix(req.GetAtime(), 0), time.Unix(req.GetMtime(), 0))
 
 	if err != nil {
 		log.Fatal(err)

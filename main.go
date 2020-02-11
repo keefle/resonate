@@ -46,6 +46,7 @@ func createHook(req *rfs.CreateRequest) {
 
 	_, err = client.Create(context.Background(), &network.CreateRequest{Path: req.Path, Name: req.Name, Mode: uint32(req.Mode)})
 	log.Println(err)
+	log.Println(conn.Close())
 }
 
 func writeHook(req *rfs.WriteRequest) {
@@ -56,6 +57,7 @@ func writeHook(req *rfs.WriteRequest) {
 	client := network.NewFileManagerClient(conn)
 	_, err = client.Write(context.Background(), &network.WriteRequest{Path: req.Path, Data: req.Data, Offset: req.Offset})
 	log.Println(err)
+	log.Println(conn.Close())
 }
 
 func removeHook(req *rfs.RemoveRequest) {
@@ -66,6 +68,7 @@ func removeHook(req *rfs.RemoveRequest) {
 	client := network.NewFileManagerClient(conn)
 	_, err = client.Remove(context.Background(), &network.RemoveRequest{Path: req.Path, Name: req.Name})
 	log.Println(err)
+	log.Println(conn.Close())
 }
 
 func renameHook(req *rfs.RenameRequest) {
@@ -76,6 +79,7 @@ func renameHook(req *rfs.RenameRequest) {
 	client := network.NewFileManagerClient(conn)
 	_, err = client.Rename(context.Background(), &network.RenameRequest{Path: req.Path, Oldname: req.OldName, Newname: req.NewName, Newdirpath: req.NewDir})
 	log.Println(err)
+	log.Println(conn.Close())
 }
 
 func mkdirHook(req *rfs.MkdirRequest) {
@@ -86,4 +90,38 @@ func mkdirHook(req *rfs.MkdirRequest) {
 	client := network.NewFileManagerClient(conn)
 	_, err = client.Mkdir(context.Background(), &network.MkdirRequest{Path: req.Path, Name: req.Name, Mode: uint32(req.Mode)})
 	log.Println(err)
+	log.Println(conn.Close())
+}
+
+func linkHook(req *rfs.LinkRequest) {
+	log.Println("hook running")
+	conn, err := grpc.Dial(*peer, grpc.WithInsecure())
+	log.Println(err)
+
+	client := network.NewFileManagerClient(conn)
+	_, err = client.Link(context.Background(), &network.LinkRequest{Path: req.Path, Newname: req.NewName, Old: req.Old})
+	log.Println(err)
+	log.Println(conn.Close())
+}
+
+func symlinkHook(req *rfs.SymlinkRequest) {
+	log.Println("hook running")
+	conn, err := grpc.Dial(*peer, grpc.WithInsecure())
+	log.Println(err)
+
+	client := network.NewFileManagerClient(conn)
+	_, err = client.Symlink(context.Background(), &network.SymlinkRequest{Path: req.Path, Newname: req.NewName, Target: req.Target})
+	log.Println(err)
+	log.Println(conn.Close())
+}
+
+func setattrHook(req *rfs.SetattrRequest) {
+	log.Println("hook running")
+	conn, err := grpc.Dial(*peer, grpc.WithInsecure())
+	log.Println(err)
+
+	client := network.NewFileManagerClient(conn)
+	_, err = client.Setattr(context.Background(), &network.SetattrRequest{Path: req.Path, Atime: req.Atime.Unix(), Mtime: req.Mtime.Unix()})
+	log.Println(err)
+	log.Println(conn.Close())
 }
