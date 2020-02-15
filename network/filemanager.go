@@ -7,35 +7,54 @@ import (
 	"path/filepath"
 	"time"
 
+	"git.nightcrickets.space/keefleoflimon/resonate/util"
 	rfs "git.nightcrickets.space/keefleoflimon/resonatefuse"
+	"github.com/pkg/errors"
 )
 
 var _ FileManagerServer = (*FileManager)(nil)
 
 type FileManager struct {
 	fs *rfs.FS
+	lm *util.LockManager
 }
 
-func NewFileManager(fs *rfs.FS) *FileManager {
-	return &FileManager{fs: fs}
+func NewFileManager(fs *rfs.FS, lm *util.LockManager) *FileManager {
+	return &FileManager{fs: fs, lm: lm}
 }
 
 func (fm *FileManager) Create(ctx context.Context, req *CreateRequest) (*Void, error) {
+	if !fm.lm.Lock(req.GetPath()) {
+		return &Void{}, errors.Errorf("could not lock file (%v)", req.GetPath())
+	}
+	defer fm.lm.Unlock(req.GetPath())
+
+	toBeCreated := filepath.Join(req.GetPath(), req.GetName())
+	if !fm.lm.Lock(toBeCreated) {
+		return &Void{}, errors.Errorf("could not lock file (%v)", toBeCreated)
+	}
+	defer fm.lm.Unlock(toBeCreated)
+
 	node, _ := fm.fs.Root()
 	child := node.(*rfs.File).Child(req.GetPath())
 	if child == nil {
 		log.Fatal("what da bell man")
 	}
+
 	_, err := child.FFNode.Create(req.GetName(), os.FileMode(req.GetMode()))
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("filemanager creating", filepath.Join(fm.fs.Location(), req.GetPath(), req.GetName()))
-	log.Println("filemanager:", rfs.Touch(filepath.Join(fm.fs.Location(), req.GetPath(), req.GetName()), os.FileMode(req.GetMode())))
 	return &Void{}, nil
 }
 
 func (fm *FileManager) Write(ctx context.Context, req *WriteRequest) (*Void, error) {
+	if !fm.lm.Lock(req.GetPath()) {
+		return &Void{}, errors.Errorf("could not lock file (%v)", req.GetPath())
+	}
+	defer fm.lm.Unlock(req.GetPath())
+
 	node, _ := fm.fs.Root()
 	child := node.(*rfs.File).Child(req.GetPath())
 	_, err := child.FFNode.Write(req.GetData(), req.GetOffset())
@@ -48,6 +67,11 @@ func (fm *FileManager) Write(ctx context.Context, req *WriteRequest) (*Void, err
 }
 
 func (fm *FileManager) Remove(ctx context.Context, req *RemoveRequest) (*Void, error) {
+	if !fm.lm.Lock(req.GetPath()) {
+		return &Void{}, errors.Errorf("could not lock file (%v)", req.GetPath())
+	}
+	defer fm.lm.Unlock(req.GetPath())
+
 	node, _ := fm.fs.Root()
 	child := node.(*rfs.File).Child(req.GetPath())
 	err := child.FFNode.Remove(req.GetName())
@@ -60,6 +84,17 @@ func (fm *FileManager) Remove(ctx context.Context, req *RemoveRequest) (*Void, e
 }
 
 func (fm *FileManager) Mkdir(ctx context.Context, req *MkdirRequest) (*Void, error) {
+	if !fm.lm.Lock(req.GetPath()) {
+		return &Void{}, errors.Errorf("could not lock file (%v)", req.GetPath())
+	}
+	defer fm.lm.Unlock(req.GetPath())
+
+	toBeCreated := filepath.Join(req.GetPath(), req.GetName())
+	if !fm.lm.Lock(toBeCreated) {
+		return &Void{}, errors.Errorf("could not lock file (%v)", toBeCreated)
+	}
+	defer fm.lm.Unlock(toBeCreated)
+
 	node, _ := fm.fs.Root()
 	child := node.(*rfs.File).Child(req.GetPath())
 	_, err := child.FFNode.Mkdir(req.GetName(), os.FileMode(req.GetMode()))
@@ -72,9 +107,27 @@ func (fm *FileManager) Mkdir(ctx context.Context, req *MkdirRequest) (*Void, err
 }
 
 func (fm *FileManager) Rename(ctx context.Context, req *RenameRequest) (*Void, error) {
+	if !fm.lm.Lock(req.GetPath()) {
+		return &Void{}, errors.Errorf("could not lock file (%v)", req.GetPath())
+	}
+	defer fm.lm.Unlock(req.GetPath())
+
+	toBeRenamed := filepath.Join(req.GetPath(), req.GetOldname())
+	if !fm.lm.Lock(toBeRenamed) {
+		return &Void{}, errors.Errorf("could not lock file (%v)", toBeRenamed)
+	}
+	defer fm.lm.Unlock(toBeRenamed)
+
+	toBeCreated := filepath.Join(req.GetPath(), req.GetNewname())
+	if !fm.lm.Lock(toBeCreated) {
+		return &Void{}, errors.Errorf("could not lock file (%v)", toBeCreated)
+	}
+	defer fm.lm.Unlock(toBeCreated)
+
 	node, _ := fm.fs.Root()
 	child := node.(*rfs.File).Child(req.GetPath())
 	newDir := node.(*rfs.File).Child(req.GetNewdirpath())
+
 	err := child.FFNode.Rename(req.GetOldname(), req.GetNewname(), newDir.FFNode)
 
 	if err != nil {
@@ -85,6 +138,23 @@ func (fm *FileManager) Rename(ctx context.Context, req *RenameRequest) (*Void, e
 }
 
 func (fm *FileManager) Link(ctx context.Context, req *LinkRequest) (*Void, error) {
+	if !fm.lm.Lock(req.GetPath()) {
+		return &Void{}, errors.Errorf("could not lock file (%v)", req.GetPath())
+	}
+	defer fm.lm.Unlock(req.GetPath())
+
+	toBeLinked := filepath.Join(req.GetPath(), req.GetOld())
+	if !fm.lm.Lock(toBeLinked) {
+		return &Void{}, errors.Errorf("could not lock file (%v)", toBeLinked)
+	}
+	defer fm.lm.Unlock(toBeLinked)
+
+	toBeCreated := filepath.Join(req.GetPath(), req.GetNewname())
+	if !fm.lm.Lock(toBeCreated) {
+		return &Void{}, errors.Errorf("could not lock file (%v)", toBeCreated)
+	}
+	defer fm.lm.Unlock(toBeCreated)
+
 	node, _ := fm.fs.Root()
 	child := node.(*rfs.File).Child(req.GetPath())
 	old := node.(*rfs.File).Child(req.GetOld())
@@ -98,6 +168,23 @@ func (fm *FileManager) Link(ctx context.Context, req *LinkRequest) (*Void, error
 }
 
 func (fm *FileManager) Symlink(ctx context.Context, req *SymlinkRequest) (*Void, error) {
+	if !fm.lm.Lock(req.GetPath()) {
+		return &Void{}, errors.Errorf("could not lock file (%v)", req.GetPath())
+	}
+	defer fm.lm.Unlock(req.GetPath())
+
+	toBeLinked := filepath.Join(req.GetPath(), req.GetTarget())
+	if !fm.lm.Lock(toBeLinked) {
+		return &Void{}, errors.Errorf("could not lock file (%v)", toBeLinked)
+	}
+	defer fm.lm.Unlock(toBeLinked)
+
+	toBeCreated := filepath.Join(req.GetPath(), req.GetNewname())
+	if !fm.lm.Lock(toBeCreated) {
+		return &Void{}, errors.Errorf("could not lock file (%v)", toBeCreated)
+	}
+	defer fm.lm.Unlock(toBeCreated)
+
 	node, _ := fm.fs.Root()
 	child := node.(*rfs.File).Child(req.GetPath())
 	_, err := child.FFNode.Symlink(req.GetTarget(), req.GetNewname())
@@ -110,9 +197,14 @@ func (fm *FileManager) Symlink(ctx context.Context, req *SymlinkRequest) (*Void,
 }
 
 func (fm *FileManager) Setattr(ctx context.Context, req *SetattrRequest) (*Void, error) {
+
 	node, _ := fm.fs.Root()
 	child := node.(*rfs.File).Child(req.GetPath())
 
+	if !fm.lm.Lock(child.FFNode.Path()) {
+		return &Void{}, errors.Errorf("could not lock file (%v)", child.FFNode.Path())
+	}
+	defer fm.lm.Unlock(child.FFNode.Path())
 	err := child.FFNode.Setattr(os.FileMode(req.GetMode()), time.Unix(req.GetAtime(), 0), time.Unix(req.GetMtime(), 0))
 
 	if err != nil {

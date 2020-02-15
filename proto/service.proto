@@ -16,6 +16,13 @@ service FileManager {
 
 message Void {}
 
+message LockRequest {
+    string path = 1;
+}
+message LockResponse {
+    bool result = 1;
+}
+
 // Create
 message CreateRequest {
     string path   = 1;
