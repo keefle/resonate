@@ -14,7 +14,7 @@ type LockManager struct {
 
 func NewLockManager() *LockManager {
 	return &LockManager{
-		locks: make(map[string]bool, 0),
+		locks: make(map[string]bool),
 	}
 }
 

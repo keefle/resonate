@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"git.nightcrickets.space/keefleoflimon/resonate/network"
 	"git.nightcrickets.space/keefleoflimon/resonate/util"
@@ -14,8 +17,8 @@ import (
 
 var (
 	port = flag.Int("port", 1234, "choose a port number for self")
-	peer = flag.String("peer", "127.0.0.1:4321", "choose peer address")
-	dir  = flag.String("dir", "fake", "choose directory to sync")
+	peer = flag.String("peer", "localhost:4321", "choose peer address")
+	dir  = flag.String("dir", "test", "choose directory to sync")
 )
 
 func main() {
@@ -42,5 +45,28 @@ func main() {
 		}
 	}()
 
-	vol.Serve()
+	done := make(chan struct{})
+	cleanup(vol.Stop, done)
+
+	if err := vol.Serve(); err != nil {
+		log.Fatal(err)
+	}
+
+	<-done
+}
+
+func cleanup(term func() error, done chan<- struct{}) {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		for range c {
+			if err := term(); err != nil {
+				log.Printf("Error occured when tring to terminate: %v", err)
+			}
+			done <- struct{}{}
+
+			// check if needed
+			close(c)
+		}
+	}()
 }
