@@ -1,6 +1,70 @@
 # resonate
-A simple file synchronisation tool.
+A bidirectional folder synchronisation daemon.
 
+### Installation
+```
+$ go get -u git.nightcrickets.space/keefleoflimon/resonate
+```
+
+### How to run
+```
+$ mkdir test1
+$ resonate -dir test1 -port 1234 -peer localhost:4321
+```
+
+In another terminal:
+```
+$ mkdir test2
+$ resonate -dir test2 -port 4321 -peer localhost:1234
+```
+
+Now if you list files you will see two new folders:
+```
+$ ls
+...
+test1-resonate
+test2-resonate
+...
+```
+
+Make any changes to any of the two new folders (test2-resonate, test1-resonate)
+create files in one of them, write to them etc.  Those changes will be replicated
+bit by bit on the other folder.
+
+### Support
+Currently only works on Linux distributions and FreeBSD.
+
+### Limitations
+- Currently both devices that need to be in sync need to be on the same network
+- Only two devices can sync currently
+- No Windows support
+
+### TODO:
+- [ ] Allow more than two devices to connect
+- [ ] Allow both services to use only one connection
+- [ ] Add Configuration option to have read only nodes
+- [ ] Allow to build fuse from non empty folders
+
+- [x] Search for a golangy way to check if files on disk changed. (Inotify
+  libraries were considered but at the end I went with the fuse approach (to be
+  able to intercept write/move/delete/create calls before they take affect)
+- [ ] Research more about [noise](https://github.com/perlin-network/noise)
+- [ ] mosh or ssh, mosh in golang? ssh in golang?
+- [ ] ssh and mosh as a communication protocol between services?
+
+## IDEAS:
+- Binary Change log (mongodb)
+- Transactional file systems
+- Cap theorem
+- Only Big group writes in case of partition "corum? (strict majority)
+floor(N/2)" Downside? if the system is cut into three parts,
+you may not be aable to know if you hold the majority
+- Virtual Filesystem FUSE
+
+---
+
+Note: The text below was taken from another similar project (this was originally
+an Interview project). I've taken the text of the problem for inspiration.
 
 # Index
 
@@ -251,19 +315,3 @@ A: The second server overwrites the old changed files
 A: with the new ones
 
 
-## TODO:
-- Search for a golangy way to check if files on disk changed.
-- Research more about noise
-- If a file has changed, check its checksum with an old recorded checksum stored
-  in a dot file
-- mosh or ssh, mosh in golang? ssh in golang?
-- ssh and mosh as a communication protocol between services?
-
-## IDEAS:
-- Binary Change log (mongodb)
-- Transactional file systems
-- Cap theorem
-- Only Big group writes in case of partition "corum? (strict majority)
-floor(N/2)" Downside? if the system is cut into three parts,
-you may not be aable to know if you hold the majority
-- Virtual Filesystem FUSE
