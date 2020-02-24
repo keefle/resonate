@@ -17,8 +17,6 @@ type HookManager struct {
 }
 
 func NewHookManager(lm *util.LockManager, client network.FileManagerClient) *HookManager {
-	// conn, err := grpc.Dial(*peer, grpc.WithInsecure())
-
 	return &HookManager{lm: lm, client: client}
 }
 
@@ -201,7 +199,7 @@ func (hm *HookManager) symlinkHook(req *rfs.SymlinkRequest) error {
 func setattrHook(req *rfs.SetattrRequest, client network.FileManagerClient) error {
 	log.Println("setattr hook running")
 
-	_, err := client.Setattr(context.Background(), &network.SetattrRequest{Path: req.Path, Atime: req.Atime.Unix(), Mtime: req.Mtime.Unix()})
+	_, err := client.Setattr(context.Background(), &network.SetattrRequest{Path: req.Path, Mode: uint32(req.Mode), Atime: req.Atime.Unix(), Mtime: req.Mtime.Unix()})
 	log.Println(err)
 	return err
 }
