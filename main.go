@@ -45,11 +45,11 @@ func main() {
 		}
 	}()
 
-	done := make(chan struct{})
+	done := make(chan struct{}, 1)
 	cleanup(vol.Stop, done)
 
 	if err := vol.Serve(); err != nil {
-		log.Fatal(err)
+		log.Printf("serve failed: %v", err)
 	}
 
 	<-done
