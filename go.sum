@@ -6,6 +6,8 @@ git.nightcrickets.space/keefleoflimon/resonate v0.0.0-20200224202331-5ffd0893b14
 git.nightcrickets.space/keefleoflimon/resonatefuse v0.0.0-20200224201446-1080f223abb9/go.mod h1:hlkkXB88tIqOl44etjCZGN/ttHEytF7aH+qIiOBE14Q=
 git.nightcrickets.space/keefleoflimon/resonatefuse v0.0.0-20200306074315-aee9fb26a542 h1:cGbbFFZDjFidaPH+Xd7q8Qu4lMQjUqfDZCePJp/VnMw=
 git.nightcrickets.space/keefleoflimon/resonatefuse v0.0.0-20200306074315-aee9fb26a542/go.mod h1:qCpEFZgiSrN2OmubAmEJY4Gt1GQTLAbX8Z2nu6KvrXo=
+git.nightcrickets.space/keefleoflimon/resonatefuse v0.0.0-20200307104024-0bc246c4fc3b h1:dYVL9a8hChKbYBvu8e4xWtbFHLTaBaa9sjlHMUOYRvI=
+git.nightcrickets.space/keefleoflimon/resonatefuse v0.0.0-20200307104024-0bc246c4fc3b/go.mod h1:qCpEFZgiSrN2OmubAmEJY4Gt1GQTLAbX8Z2nu6KvrXo=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
@@ -76,6 +78,8 @@ google.golang.org/genproto v0.0.0-20200224152610-e50cd9704f63 h1:YzfoEYWbODU5Fbt
 google.golang.org/genproto v0.0.0-20200224152610-e50cd9704f63/go.mod h1:55QSHmfGQM9UVYDPBsyGGes0y52j32PQ3BqQfXhyH3c=
 google.golang.org/genproto v0.0.0-20200305110556-506484158171 h1:xes2Q2k+d/+YNXVw0FpZkIDJiaux4OVrRKXRAzH6A0U=
 google.golang.org/genproto v0.0.0-20200305110556-506484158171/go.mod h1:55QSHmfGQM9UVYDPBsyGGes0y52j32PQ3BqQfXhyH3c=
+google.golang.org/genproto v0.0.0-20200309141739-5b75447e413d h1:VQ0pz4dAUaMWcQLM7tGY8Nk691kSrlGPyF5nSgAIw2g=
+google.golang.org/genproto v0.0.0-20200309141739-5b75447e413d/go.mod h1:55QSHmfGQM9UVYDPBsyGGes0y52j32PQ3BqQfXhyH3c=
 google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZiDr8c=
 google.golang.org/grpc v1.23.0/go.mod h1:Y5yQAOtifL1yxbo5wqy6BxZv8vAUGQwXBOALyacEbxg=
 google.golang.org/grpc v1.27.0/go.mod h1:qbnxyOmOxrQa7FizSgH+ReBfzJrCY1pSN7KXBS8abTk=
