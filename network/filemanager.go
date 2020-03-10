@@ -38,12 +38,12 @@ func (fm *FileManager) Create(ctx context.Context, req *CreateRequest) (*Void, e
 	node, _ := fm.fs.Root()
 	child := node.(*rfs.File).Child(req.GetPath())
 	if child == nil {
-		log.Fatal("what da bell man")
+		log.Print("could not find child")
 	}
 
 	_, err := child.FFNode.Create(req.GetName(), os.FileMode(req.GetMode()))
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 	log.Println("filemanager creating", filepath.Join(fm.fs.Location(), req.GetPath(), req.GetName()))
 	return &Void{}, nil
@@ -60,7 +60,7 @@ func (fm *FileManager) Write(ctx context.Context, req *WriteRequest) (*Void, err
 	_, err := child.FFNode.Write(req.GetData(), req.GetOffset())
 
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 
 	return &Void{}, nil
@@ -77,7 +77,7 @@ func (fm *FileManager) Remove(ctx context.Context, req *RemoveRequest) (*Void, e
 	err := child.FFNode.Remove(req.GetName())
 
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 
 	return &Void{}, nil
@@ -100,7 +100,7 @@ func (fm *FileManager) Mkdir(ctx context.Context, req *MkdirRequest) (*Void, err
 	_, err := child.FFNode.Mkdir(req.GetName(), os.FileMode(req.GetMode()))
 
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 
 	return &Void{}, nil
@@ -131,7 +131,7 @@ func (fm *FileManager) Rename(ctx context.Context, req *RenameRequest) (*Void, e
 	err := child.FFNode.Rename(req.GetOldname(), req.GetNewname(), newDir.FFNode)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 
 	return &Void{}, nil
@@ -161,7 +161,7 @@ func (fm *FileManager) Link(ctx context.Context, req *LinkRequest) (*Void, error
 	_, err := child.FFNode.Link(req.GetNewname(), old.FFNode)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 
 	return &Void{}, nil
@@ -190,7 +190,7 @@ func (fm *FileManager) Symlink(ctx context.Context, req *SymlinkRequest) (*Void,
 	_, err := child.FFNode.Symlink(req.GetTarget(), req.GetNewname())
 
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 
 	return &Void{}, nil
@@ -208,7 +208,7 @@ func (fm *FileManager) Setattr(ctx context.Context, req *SetattrRequest) (*Void,
 	err := child.FFNode.Setattr(os.FileMode(req.GetMode()), time.Unix(req.GetAtime(), 0), time.Unix(req.GetMtime(), 0))
 
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 
 	return &Void{}, nil
