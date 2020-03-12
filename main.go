@@ -24,13 +24,13 @@ var (
 func main() {
 	flag.Parse()
 
-	lm := util.NewLockManager()
 	conn, err := grpc.Dial(*peer, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("could not esaplish connection with peer (%v)", peer)
 	}
 
 	client := network.NewFileManagerClient(conn)
+	lm := util.NewLockManager()
 	hm := NewHookManager(lm, client)
 	vol := rfs.NewVolume(*dir, hm.HooksToOptions()...)
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
