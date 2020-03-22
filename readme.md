@@ -39,18 +39,6 @@ Currently only works on Linux distributions and FreeBSD.
 - Only two devices can sync currently
 - No Windows support
 
-### TODO:
-- [ ] Allow more than two devices to connect
-- [ ] Allow both services to use only one connection
-- [ ] Add Configuration option to have read only nodes
-- [ ] Allow to build fuse from non empty folders
-
-- [x] Search for a golangy way to check if files on disk changed. (Inotify
-  libraries were considered but at the end I went with the fuse approach (to be
-  able to intercept write/move/delete/create calls before they take affect)
-- [ ] Research more about [noise](https://github.com/perlin-network/noise)
-- [ ] mosh or ssh, mosh in golang? ssh in golang?
-- [ ] ssh and mosh as a communication protocol between services?
 
 ## IDEAS:
 - Binary Change log (mongodb)
