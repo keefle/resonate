@@ -5,12 +5,12 @@ import (
 	"log"
 	"path/filepath"
 
+	"git.nightcrickets.space/keefleoflimon/resonate/fuse"
 	"git.nightcrickets.space/keefleoflimon/resonate/network"
-	rfs "git.nightcrickets.space/keefleoflimon/resonatefuse"
 	"github.com/pkg/errors"
 )
 
-func genCreateHook(req *rfs.GeneralRequest, client network.FileManagerClient) error {
+func genCreateHook(req *fuse.GeneralRequest, client network.FileManagerClient) error {
 	log.Println("create hook running")
 
 	_, err := client.Create(context.Background(), &network.CreateRequest{Path: req.Path, Name: req.Name, Mode: uint32(req.Mode)})
@@ -18,7 +18,7 @@ func genCreateHook(req *rfs.GeneralRequest, client network.FileManagerClient) er
 	return err
 }
 
-func (hm *HookManager) genCreateHook(req *rfs.GeneralRequest) error {
+func (hm *HookManager) genCreateHook(req *fuse.GeneralRequest) error {
 	if !hm.lm.Lock(req.Path) {
 		return errors.Errorf("could not lock file (%v)", req.Path)
 	}
@@ -33,7 +33,7 @@ func (hm *HookManager) genCreateHook(req *rfs.GeneralRequest) error {
 	return genCreateHook(req, hm.client)
 }
 
-func genWriteHook(req *rfs.GeneralRequest, client network.FileManagerClient) error {
+func genWriteHook(req *fuse.GeneralRequest, client network.FileManagerClient) error {
 	log.Println("write hook running")
 
 	_, err := client.Write(context.Background(), &network.WriteRequest{Path: req.Path, Data: req.Data, Offset: req.Offset})
@@ -41,7 +41,7 @@ func genWriteHook(req *rfs.GeneralRequest, client network.FileManagerClient) err
 	return err
 }
 
-func (hm *HookManager) genWriteHook(req *rfs.GeneralRequest) error {
+func (hm *HookManager) genWriteHook(req *fuse.GeneralRequest) error {
 	if !hm.lm.Lock(req.Path) {
 		return errors.Errorf("could not lock file (%v)", req.Path)
 	}
@@ -49,7 +49,7 @@ func (hm *HookManager) genWriteHook(req *rfs.GeneralRequest) error {
 	return genWriteHook(req, hm.client)
 }
 
-func genRemoveHook(req *rfs.GeneralRequest, client network.FileManagerClient) error {
+func genRemoveHook(req *fuse.GeneralRequest, client network.FileManagerClient) error {
 	log.Println("remove hook running")
 
 	_, err := client.Remove(context.Background(), &network.RemoveRequest{Path: req.Path, Name: req.Name})
@@ -57,7 +57,7 @@ func genRemoveHook(req *rfs.GeneralRequest, client network.FileManagerClient) er
 	return err
 }
 
-func (hm *HookManager) genRemoveHook(req *rfs.GeneralRequest) error {
+func (hm *HookManager) genRemoveHook(req *fuse.GeneralRequest) error {
 	if !hm.lm.Lock(req.Path) {
 		return errors.Errorf("could not lock file (%v)", req.Path)
 	}
@@ -65,7 +65,7 @@ func (hm *HookManager) genRemoveHook(req *rfs.GeneralRequest) error {
 	return genRemoveHook(req, hm.client)
 }
 
-func genRenameHook(req *rfs.GeneralRequest, client network.FileManagerClient) error {
+func genRenameHook(req *fuse.GeneralRequest, client network.FileManagerClient) error {
 	log.Println("rename hook running")
 
 	_, err := client.Rename(context.Background(), &network.RenameRequest{Path: req.Path, Oldname: req.OldName, Newname: req.NewName, Newdirpath: req.NewDir})
@@ -73,7 +73,7 @@ func genRenameHook(req *rfs.GeneralRequest, client network.FileManagerClient) er
 	return err
 }
 
-func (hm *HookManager) genRenameHook(req *rfs.GeneralRequest) error {
+func (hm *HookManager) genRenameHook(req *fuse.GeneralRequest) error {
 	if !hm.lm.Lock(req.Path) {
 		return errors.Errorf("could not lock file (%v)", req.Path)
 	}
@@ -94,7 +94,7 @@ func (hm *HookManager) genRenameHook(req *rfs.GeneralRequest) error {
 	return genRenameHook(req, hm.client)
 }
 
-func genMkdirHook(req *rfs.GeneralRequest, client network.FileManagerClient) error {
+func genMkdirHook(req *fuse.GeneralRequest, client network.FileManagerClient) error {
 	log.Println("mkdir hook running")
 
 	_, err := client.Mkdir(context.Background(), &network.MkdirRequest{Path: req.Path, Name: req.Name, Mode: uint32(req.Mode)})
@@ -102,7 +102,7 @@ func genMkdirHook(req *rfs.GeneralRequest, client network.FileManagerClient) err
 	return err
 }
 
-func (hm *HookManager) genMkdirHook(req *rfs.GeneralRequest) error {
+func (hm *HookManager) genMkdirHook(req *fuse.GeneralRequest) error {
 	if !hm.lm.Lock(req.Path) {
 		return errors.Errorf("could not lock file (%v)", req.Path)
 	}
@@ -116,7 +116,7 @@ func (hm *HookManager) genMkdirHook(req *rfs.GeneralRequest) error {
 	return genMkdirHook(req, hm.client)
 }
 
-func genLinkHook(req *rfs.GeneralRequest, client network.FileManagerClient) error {
+func genLinkHook(req *fuse.GeneralRequest, client network.FileManagerClient) error {
 	log.Println("link hook running")
 
 	_, err := client.Link(context.Background(), &network.LinkRequest{Path: req.Path, Newname: req.NewName, Old: req.Old})
@@ -124,7 +124,7 @@ func genLinkHook(req *rfs.GeneralRequest, client network.FileManagerClient) erro
 	return err
 }
 
-func (hm *HookManager) genLinkHook(req *rfs.GeneralRequest) error {
+func (hm *HookManager) genLinkHook(req *fuse.GeneralRequest) error {
 	if !hm.lm.Lock(req.Path) {
 		return errors.Errorf("could not lock file (%v)", req.Path)
 	}
@@ -145,7 +145,7 @@ func (hm *HookManager) genLinkHook(req *rfs.GeneralRequest) error {
 	return genLinkHook(req, hm.client)
 }
 
-func genSymlinkHook(req *rfs.GeneralRequest, client network.FileManagerClient) error {
+func genSymlinkHook(req *fuse.GeneralRequest, client network.FileManagerClient) error {
 	log.Println("symlink hook running")
 
 	_, err := client.Symlink(context.Background(), &network.SymlinkRequest{Path: req.Path, Newname: req.NewName, Target: req.Target})
@@ -153,7 +153,7 @@ func genSymlinkHook(req *rfs.GeneralRequest, client network.FileManagerClient) e
 	return err
 }
 
-func (hm *HookManager) genSymlinkHook(req *rfs.GeneralRequest) error {
+func (hm *HookManager) genSymlinkHook(req *fuse.GeneralRequest) error {
 	if !hm.lm.Lock(req.Path) {
 		return errors.Errorf("could not lock file (%v)", req.Path)
 	}
@@ -173,7 +173,7 @@ func (hm *HookManager) genSymlinkHook(req *rfs.GeneralRequest) error {
 	return genSymlinkHook(req, hm.client)
 }
 
-func genSetattrHook(req *rfs.GeneralRequest, client network.FileManagerClient) error {
+func genSetattrHook(req *fuse.GeneralRequest, client network.FileManagerClient) error {
 	log.Println("setattr hook running")
 
 	_, err := client.Setattr(context.Background(), &network.SetattrRequest{Path: req.Path, Mode: uint32(req.Mode), Atime: req.Atime.Unix(), Mtime: req.Mtime.Unix()})
@@ -181,7 +181,7 @@ func genSetattrHook(req *rfs.GeneralRequest, client network.FileManagerClient) e
 	return err
 }
 
-func (hm *HookManager) genSetattrHook(req *rfs.GeneralRequest) error {
+func (hm *HookManager) genSetattrHook(req *fuse.GeneralRequest) error {
 	if !hm.lm.Lock(req.Path) {
 		return errors.Errorf("could not lock file (%v)", req.Path)
 	}

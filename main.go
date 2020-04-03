@@ -9,9 +9,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	"git.nightcrickets.space/keefleoflimon/resonate/fuse"
 	"git.nightcrickets.space/keefleoflimon/resonate/network"
 	"git.nightcrickets.space/keefleoflimon/resonate/util"
-	rfs "git.nightcrickets.space/keefleoflimon/resonatefuse"
 	"google.golang.org/grpc"
 )
 
@@ -32,7 +32,7 @@ func main() {
 	client := network.NewFileManagerClient(conn)
 	lm := util.NewLockManager()
 	hm := NewHookManager(lm, client)
-	vol := rfs.NewVolume(*dir, hm.HooksToOptions()...)
+	vol := fuse.NewVolume(*dir, hm.HooksToOptions()...)
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

@@ -7,19 +7,19 @@ import (
 	"path/filepath"
 	"time"
 
+	"git.nightcrickets.space/keefleoflimon/resonate/fuse"
 	"git.nightcrickets.space/keefleoflimon/resonate/util"
-	rfs "git.nightcrickets.space/keefleoflimon/resonatefuse"
 	"github.com/pkg/errors"
 )
 
 var _ FileManagerServer = (*FileManager)(nil)
 
 type FileManager struct {
-	fs *rfs.FS
+	fs *fuse.FS
 	lm *util.LockManager
 }
 
-func NewFileManager(fs *rfs.FS, lm *util.LockManager) *FileManager {
+func NewFileManager(fs *fuse.FS, lm *util.LockManager) *FileManager {
 	return &FileManager{fs: fs, lm: lm}
 }
 
@@ -36,7 +36,7 @@ func (fm *FileManager) Create(ctx context.Context, req *CreateRequest) (*Void, e
 	defer fm.lm.Unlock(toBeCreated)
 
 	node, _ := fm.fs.Root()
-	child := node.(*rfs.File).Child(req.GetPath())
+	child := node.(*fuse.File).Child(req.GetPath())
 	if child == nil {
 		log.Print("could not find child")
 	}
@@ -56,7 +56,7 @@ func (fm *FileManager) Write(ctx context.Context, req *WriteRequest) (*Void, err
 	defer fm.lm.Unlock(req.GetPath())
 
 	node, _ := fm.fs.Root()
-	child := node.(*rfs.File).Child(req.GetPath())
+	child := node.(*fuse.File).Child(req.GetPath())
 	_, err := child.FFNode.Write(req.GetData(), req.GetOffset())
 
 	if err != nil {
@@ -73,7 +73,7 @@ func (fm *FileManager) Remove(ctx context.Context, req *RemoveRequest) (*Void, e
 	defer fm.lm.Unlock(req.GetPath())
 
 	node, _ := fm.fs.Root()
-	child := node.(*rfs.File).Child(req.GetPath())
+	child := node.(*fuse.File).Child(req.GetPath())
 	err := child.FFNode.Remove(req.GetName())
 
 	if err != nil {
@@ -96,7 +96,7 @@ func (fm *FileManager) Mkdir(ctx context.Context, req *MkdirRequest) (*Void, err
 	defer fm.lm.Unlock(toBeCreated)
 
 	node, _ := fm.fs.Root()
-	child := node.(*rfs.File).Child(req.GetPath())
+	child := node.(*fuse.File).Child(req.GetPath())
 	_, err := child.FFNode.Mkdir(req.GetName(), os.FileMode(req.GetMode()))
 
 	if err != nil {
@@ -125,8 +125,8 @@ func (fm *FileManager) Rename(ctx context.Context, req *RenameRequest) (*Void, e
 	defer fm.lm.Unlock(toBeCreated)
 
 	node, _ := fm.fs.Root()
-	child := node.(*rfs.File).Child(req.GetPath())
-	newDir := node.(*rfs.File).Child(req.GetNewdirpath())
+	child := node.(*fuse.File).Child(req.GetPath())
+	newDir := node.(*fuse.File).Child(req.GetNewdirpath())
 
 	err := child.FFNode.Rename(req.GetOldname(), req.GetNewname(), newDir.FFNode)
 
@@ -156,8 +156,8 @@ func (fm *FileManager) Link(ctx context.Context, req *LinkRequest) (*Void, error
 	defer fm.lm.Unlock(toBeCreated)
 
 	node, _ := fm.fs.Root()
-	child := node.(*rfs.File).Child(req.GetPath())
-	old := node.(*rfs.File).Child(req.GetOld())
+	child := node.(*fuse.File).Child(req.GetPath())
+	old := node.(*fuse.File).Child(req.GetOld())
 	_, err := child.FFNode.Link(req.GetNewname(), old.FFNode)
 
 	if err != nil {
@@ -186,7 +186,7 @@ func (fm *FileManager) Symlink(ctx context.Context, req *SymlinkRequest) (*Void,
 	defer fm.lm.Unlock(toBeCreated)
 
 	node, _ := fm.fs.Root()
-	child := node.(*rfs.File).Child(req.GetPath())
+	child := node.(*fuse.File).Child(req.GetPath())
 	_, err := child.FFNode.Symlink(req.GetTarget(), req.GetNewname())
 
 	if err != nil {
@@ -199,7 +199,7 @@ func (fm *FileManager) Symlink(ctx context.Context, req *SymlinkRequest) (*Void,
 func (fm *FileManager) Setattr(ctx context.Context, req *SetattrRequest) (*Void, error) {
 
 	node, _ := fm.fs.Root()
-	child := node.(*rfs.File).Child(req.GetPath())
+	child := node.(*fuse.File).Child(req.GetPath())
 
 	if !fm.lm.Lock(child.FFNode.Path()) {
 		return &Void{}, errors.Errorf("could not lock file (%v)", child.FFNode.Path())
